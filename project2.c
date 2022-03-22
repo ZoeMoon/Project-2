@@ -5,23 +5,23 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-#define BUFFER 1024
-int counter;
-int totalWords;
+// #define BUFFER 1024
+// int counter;
+// int totalWords;
 
-typedef struct node_t {
-    int value;
-    struct node_t * next;
-} node_t;
+// typedef struct node_t {
+//     int value;
+//     struct node_t * next;
+// } node_t;
 
-typedef struct queue_t{
-    node_t nextIn;   
-    node_t nextOut;    
-    int queue_size; 
-    char qbuff[BUFFER];
-    pthread_mutex_t lock;
-    pthread_cond_t cond;
-} queue_t;
+// typedef struct queue_t{
+//     node_t nextIn;   
+//     node_t nextOut;    
+//     int queue_size; 
+//     char qbuff[BUFFER];
+//     pthread_mutex_t lock;
+//     pthread_cond_t cond;
+// } queue_t;
 
 int main(int argc, char* argv[]) {
     int numTasks;
@@ -30,8 +30,8 @@ int main(int argc, char* argv[]) {
     ssize_t n = 0;  // size of allocated buffer
     ssize_t length = 0; // length of line 
 
-    assert(argc < 2);
-    numTasks = argv[1];
+    // assert(argc < 2);
+    // numTasks = argv[1];
 
     fp = stdin;
    
@@ -42,8 +42,8 @@ int main(int argc, char* argv[]) {
 
     free(line);
 
-    pthread_t p1;
-    pthread_t p2;
+    // pthread_t p1;
+    // pthread_t p2;
     return 0;
 
 }
