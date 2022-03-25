@@ -30,16 +30,31 @@ typedef struct
     QUEUE *queue; 
 } thread_data;
 
-/* // TODO
-void put(QUEUE *)
+void put(QUEUE *q, char *line)
 {
+    assert(sem_wait(&q->empty) == 0);
+    assert(sem_wait(&q->queue_lock) == 0);
+
+    q->buffer[q->fill] = (char*)line;
+    q->fill = (q->fill + 1) % q->q_len;
+
+    assert(sem_post(&q->queue_lock) == 0);
+    assert(sem_post(&q->full) == 0);
 
 }
 
-// TODO
-char *get(QUEUE *q)
+char* get(QUEUE *q)
 {
+    assert(sem_wait(&q->full) == 0);
+    assert(sem_wait(&q->queue_lock) == 0);
 
+    char *temp = q->buffer[q->use];
+    q->use = (q->use + 1) % q->q_len;
+
+    assert(sem_post(&q->queue_lock) == 0);
+    assert(sem_post(&q->empty) == 0);
+
+    return temp;
 } 
 
 // TOTO
