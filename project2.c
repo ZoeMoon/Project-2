@@ -5,7 +5,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-#define DEBUG 1     // switch to 0 before submitting 
+#define DEBUG 1     // switch to 0 before submitting
 #define BUFFER 1024 // max line length
 int counter;
 int totalWordCount;
@@ -26,41 +26,43 @@ typedef struct
 // Thread data
 typedef struct
 {
-    int taskNum;  
-    QUEUE *queue; 
+    int taskNum;
+    QUEUE *queue;
 } thread_data;
 
+// Push an entry onto the queue 
 void put(QUEUE *q, char *line)
 {
     assert(sem_wait(&q->empty) == 0);
     assert(sem_wait(&q->queue_lock) == 0);
 
-    q->buffer[q->fill] = (char*)line;
+    q->buffer[q->fill] = (char *)line;
     q->fill = (q->fill + 1) % q->q_len;
 
     assert(sem_post(&q->queue_lock) == 0);
     assert(sem_post(&q->full) == 0);
-
 }
 
-char* get(QUEUE *q)
+// Should we get the current line number from here too? 
+// Pop an entry from the queue 
+char *get(QUEUE *q)
 {
     assert(sem_wait(&q->full) == 0);
     assert(sem_wait(&q->queue_lock) == 0);
 
-    char *temp = q->buffer[q->use];
+    char *tmp = q->buffer[q->use];
     q->use = (q->use + 1) % q->q_len;
 
     assert(sem_post(&q->queue_lock) == 0);
     assert(sem_post(&q->empty) == 0);
 
-    return temp;
-} 
+    return tmp;
+}
 
-// TOTO
+// TOTO 
+// Thread function
 void *wordCount(void *)
 {
-
 }
 
 int main(int argc, char **argv[])
@@ -70,8 +72,8 @@ int main(int argc, char **argv[])
     char *line = NULL;  // line pointer
     ssize_t n = 0;      // size of allocated buffer
     ssize_t length = 0; // length of line
-    int lineCount = 0;  // number of lines 
-    totalWordCount = 0; // total number of words in file 
+    int lineCount = 0;  // number of lines
+    totalWordCount = 0; // total number of words in file
 
     assert(argc < 3);
 
@@ -104,7 +106,7 @@ int main(int argc, char **argv[])
     n = 0;       // reset buffer sie
     length = 0;  // reset length of line
 
-    // Pushes each line from the file to the queue 
+    // Pushes each line from the file to the queue
     while ((length = getline(&line, &n, fp)) != -1)
     {
         line[length - 1] = '\0'; // strip newline char
