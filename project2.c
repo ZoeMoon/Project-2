@@ -5,7 +5,9 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-#define DEBUG 1    // switch to 0 before submitting
+#define DEBUG 1     // switch to 0 before submitting
+#define BUFFER 1028 // max line length
+int totalWordCount;
 
 // Definition of queue
 typedef struct
@@ -60,10 +62,11 @@ char *get(QUEUE *q)
 // Pops line from queue
 // Counts words on line
 // Accumulates sum of words
-void* wordCount(void *thread)
+void *wordCount(void *thread)
 {
-    thread_data* data = (thread_data*)thread;
-    for(int i = 0; i < data->taskNum; i++) {
+    thread_data *data = (thread_data *)thread;
+    for (int i = 0; i < data->taskNum; i++)
+    {
         put(data->queue, i);
         printf("Inside wordcount: %d\n", i);
     }
@@ -96,10 +99,6 @@ int main(int argc, char **argv[])
         lineCount++;
     }
 
-    if (DEBUG){
-        printf("%d\n", lineCount);
-    }
-
     // Create the queue
     char *buffer1[lineCount];
     QUEUE q1 = {0, 0, lineCount, buffer1};
@@ -128,20 +127,18 @@ int main(int argc, char **argv[])
 
     for (int i = 1; i <= numTasks; i++)
     {
-        assert(pthread_create(&threads[i], NULL, wordCount, (void*)&thread1) == 0);
+        assert(pthread_create(&threads[i], NULL, wordCount, (void *)&thread1) == 0);
     }
 
-    if DEBUG
-        printf("Waiting for threads\n");
-
+    printf("Waiting for threads\n");
+    
     for (int i = 1; i <= numTasks; i++)
     {
         assert(pthread_join(threads[i], NULL) == 0);
     }
-
     printf("Threads finished\n");
 
-    free(line); // avoid memory leak
+    free(line);
 
     return 0;
 }
