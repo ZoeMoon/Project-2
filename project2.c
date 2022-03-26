@@ -5,9 +5,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-#define DEBUG 1     // switch to 0 before submitting
-#define BUFFER 1028 // max line length
-int totalWordCount;
+#define DEBUG 1    // switch to 0 before submitting
 
 // Definition of queue
 typedef struct
@@ -62,25 +60,32 @@ char *get(QUEUE *q)
 // Pops line from queue
 // Counts words on line
 // Accumulates sum of words
-void *wordCount(void *thread1)
+void* wordCount(void *thread)
 {
+    thread_data* data = (thread_data*)thread;
+    for(int i = 0; i < data->taskNum; i++) {
+        put(data->queue, i);
+        printf("Inside wordcount: %d\n", i);
+    }
+    put(data->queue, -1);
+    printf("Terminating\n");
+    return NULL;
 }
 
 int main(int argc, char **argv[])
 {
-    // int i = 0;
-    int numTasks = 0;      // number of tasks from user input
-    FILE *fp;              // file pointer
-    char *line = NULL;     // line pointer
-    char *lineCopy = NULL; // points to starting position of *line
-    ssize_t n = 0;         // size of allocated buffer
-    ssize_t length = 0;    // length of line
-    int lineCount = 0;     // number of lines
-    totalWordCount = 0;    // total number of words in file
+    int numTasks = 0;   // number of tasks from user input
+    FILE *fp;           // file pointer
+    char *line = NULL;  // line pointer
+    ssize_t n = 0;      // size of allocated buffer
+    ssize_t length = 0; // length of line
+    int lineCount = 0;  // number of lines
 
     // assert(argc < 3);
 
-    numTasks = 1; // TODO: change to numTasks = argv[1];
+    numTasks = 4; // TODO: change to numTasks = argv[1];
+
+    // Read in txt file
     fp = stdin;
 
     // Get number of lines to determine size of queue
@@ -100,16 +105,15 @@ int main(int argc, char **argv[])
     sem_init(&q1.queue_lock, 0, 1);
     assert(sem_init(&q1.empty, 0, lineCount) == 0);
     assert(sem_init(&q1.full, 0, 0) == 0);
-    
-    line = NULL;    // reset line pointer
-    n = 0;          // reset buffer size
-    length = 0;     // reset length of line
-    rewind(stdin);  // points stream to beginning of file 
+
+    line = NULL;   // reset line pointer
+    n = 0;         // reset buffer size
+    length = 0;    // reset length of line
+    rewind(stdin); // points stream to beginning of file
 
     // Pushes each line from the file to the queue
     while ((length = getline(&line, &n, fp)) != -1)
     {
-       // line[length - 1] = '\0'; // strip newline char might not be needed 
         if (DEBUG)
             printf("line q = %s\n", line);
         put(&q1, line);
@@ -121,10 +125,20 @@ int main(int argc, char **argv[])
     // Start the threads
     pthread_t threads[numTasks];
 
-    for (int i = 0; i < numTasks; i++)
+    for (int i = 1; i <= numTasks; i++)
     {
-        assert(pthread_create(&threads[i], NULL, &wordCount, (void*)thread1[i) == 0);
+        assert(pthread_create(&threads[i], NULL, wordCount, (void*)&thread1) == 0);
     }
+
+    if DEBUG
+        printf("Waiting for threads\n");
+
+    for (int i = 1; i <= numTasks; i++)
+    {
+        assert(pthread_join(threads[i], NULL) == 0);
+    }
+
+    printf("Threads finished\n");
 
     free(line); // avoid memory leak
 
