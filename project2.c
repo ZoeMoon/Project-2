@@ -59,37 +59,50 @@ char *get(QUEUE *q)
 
 int main(int argc, char **argv[])
 {
-    int numTasks;
-    FILE *fp;              // file pointer
-    char *line = NULL;     // line pointer
-    ssize_t n = 0;         // size of allocated buffer
-    ssize_t length = 0;    // length of line
-   int lineCount = 0;     // number of lines
-    // assert(argc < 2);
-    // numTasks = argv[1];
+      int numTasks = 0;   // number of tasks from user input
+    FILE *fp;           // file pointer
+    char *line = NULL;  // line pointer
+    ssize_t n = 0;      // size of allocated buffer
+    ssize_t length = 0; // length of line
+    int lineCount = 0;  // number of lines
 
+    // assert(argc < 3);
+
+    numTasks = 4; // TODO: change to numTasks = argv[1];
+
+    // Read in txt file
     fp = stdin;
 
+    // Get number of lines to determine size of queue
     while ((length = getline(&line, &n, fp)) != -1)
     {
-        // line[length-1] = '\0';   // strip newline char
-        printf("line = %s\n", line);
+        if (DEBUG)
+            printf("line = %s\n", line);
         lineCount++;
-    
     }
-    line = NULL;
-    n = 0;      // reset buffer size
-    length = 0; // reset length of line
 
-    rewind(stdin);
+    // Create the queue
+    char *buffer1[lineCount];
+    QUEUE q1 = {0, 0, lineCount, buffer1};
+    sem_init(&q1.queue_lock, 0, 1);
+    assert(sem_init(&q1.empty, 0, lineCount) == 0);
+    assert(sem_init(&q1.full, 0, 0) == 0);
+
+    line = NULL;   // reset line pointer
+    n = 0;         // reset buffer size
+    length = 0;    // reset length of line
+    rewind(stdin); // points stream to beginning of file
+
     // Pushes each line from the file to the queue
     while ((length = getline(&line, &n, fp)) != -1)
     {
-       // lineCopy[length - 1] = '\0'; // strip newline char
         if (DEBUG)
             printf("line q = %s\n", line);
+        put(&q1, line);
     }
 
+    printf("Threads finished\n");
+    
     free(line);
 
     return 0;
