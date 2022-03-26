@@ -6,7 +6,6 @@
 #include <semaphore.h>
 
 #define DEBUG 1     // switch to 0 before submitting
-#define BUFFER 1028 // max line length
 int totalWordCount;
 
 // Definition of queue
@@ -65,17 +64,22 @@ char *get(QUEUE *q)
 void *wordCount(void *thread)
 {
     thread_data *data = (thread_data *)thread;
-    for (int i = 0; i < data->taskNum; i++)
-    {
-        put(data->queue, i);
-        printf("Inside wordcount: %d\n", i);
-    }
-    put(data->queue, -1);
+    // int taskNumber = thread->numTasks;
+    // int len = thread->queue->q1;
+    // int i = 1;
+    // while(1){
+    //    int val = get(data->queue);
+    //     if (val == '\0'){
+    //         break;
+    //     }
+    //     printf("Inside wordcount: %d\n", i);
+    //     i++;
+    // }
     printf("Terminating\n");
     return NULL;
 }
 
-int main(int argc, char **argv[])
+int main(int argc, char *argv[])
 {
     int numTasks = 0;   // number of tasks from user input
     FILE *fp;           // file pointer
@@ -84,9 +88,13 @@ int main(int argc, char **argv[])
     ssize_t length = 0; // length of line
     int lineCount = 0;  // number of lines
 
-    // assert(argc < 3);
+    assert(argc < 3);
 
-    numTasks = 4; // TODO: change to numTasks = argv[1];
+    numTasks = atoi(argv[1]);
+
+    if (DEBUG){
+        printf("Num tasks: %d\n", numTasks);
+    }
 
     // Read in txt file
     fp = stdin;
@@ -114,32 +122,32 @@ int main(int argc, char **argv[])
     // Pushes each line from the file to the queue
     while ((length = getline(&line, &n, fp)) != -1)
     {
-    	for(int i = 0; line[i]!='\0'; i++){
-            if(line[i] == ' ' || line[i] == '\0'){
-                totalWordCount ++;
-            }
-       }
-       
         if (DEBUG)
             printf("line q = %s\n", line);
         put(&q1, line);
     }
-    
-    printf("Total Word Count = %d\n",totalWordCount);
 
     // Set up the data to be passed to the threads
-    thread_data thread1 = {numTasks, &q1};
+    thread_data threadD[numTasks];  // initialize array of structs 
 
     // Start the threads
     pthread_t threads[numTasks];
 
+    // Pass data to threads
+    for(int i = 1; i <= numTasks; i++){
+        threadD[i].taskNum = i;
+        threadD[i].queue = &q1;
+    }
+
+    // Create threads
     for (int i = 1; i <= numTasks; i++)
     {
-        assert(pthread_create(&threads[i], NULL, wordCount, (void *)&thread1) == 0);
+        assert(pthread_create(&threads[i], NULL, wordCount, (void *)&threadD) == 0);
     }
 
     printf("Waiting for threads\n");
-    
+
+    // Join threads 
     for (int i = 1; i <= numTasks; i++)
     {
         assert(pthread_join(threads[i], NULL) == 0);
