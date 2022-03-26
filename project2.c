@@ -57,76 +57,40 @@ char *get(QUEUE *q)
     return tmp;
 }
 
-// TODO
-// Consumer Thread function
-// Pops line from queue
-// Counts words on line
-// Accumulates sum of words
-void *wordCount(void *thread1)
-{
-}
-
 int main(int argc, char **argv[])
 {
-    // int i = 0;
-    int numTasks = 0;      // number of tasks from user input
+    int numTasks;
     FILE *fp;              // file pointer
     char *line = NULL;     // line pointer
-    char *lineCopy = NULL; // points to starting position of *line
     ssize_t n = 0;         // size of allocated buffer
     ssize_t length = 0;    // length of line
-    int lineCount = 0;     // number of lines
-    totalWordCount = 0;    // total number of words in file
+   int lineCount = 0;     // number of lines
+    // assert(argc < 2);
+    // numTasks = argv[1];
 
-    // assert(argc < 3);
-
-    numTasks = 1; // TODO: change to numTasks = argv[1];
     fp = stdin;
 
-    // Get number of lines to determine size of queue
     while ((length = getline(&line, &n, fp)) != -1)
     {
-        if (DEBUG)
-            printf("line = %s\n", line);
+        // line[length-1] = '\0';   // strip newline char
+        printf("line = %s\n", line);
         lineCount++;
-    }
-
-    if (DEBUG)
-        printf("%d\n", lineCount);
-
-    // Create the queue
-    char *buffer1[lineCount];
-    QUEUE q1 = {0, 0, lineCount, buffer1};
-    sem_init(&q1.queue_lock, 0, 1);
-    assert(sem_init(&q1.empty, 0, lineCount) == 0);
-    assert(sem_init(&q1.full, 0, 0) == 0);
     
-    line = NULL;    // reset line pointer
-    n = 0;          // reset buffer size
-    length = 0;     // reset length of line
-    rewind(stdin);  // points stream to beginning of file 
+    }
+    line = NULL;
+    n = 0;      // reset buffer size
+    length = 0; // reset length of line
 
+    rewind(stdin);
     // Pushes each line from the file to the queue
     while ((length = getline(&line, &n, fp)) != -1)
     {
-       // line[length - 1] = '\0'; // strip newline char might not be needed 
+       // lineCopy[length - 1] = '\0'; // strip newline char
         if (DEBUG)
             printf("line q = %s\n", line);
-        put(&q1, line);
     }
 
-    // Set up the data to be passed to the threads
-    thread_data thread1 = {numTasks, &q1};
-
-    // Start the threads
-    pthread_t threads[numTasks];
-
-    for (int i = 0; i < numTasks; i++)
-    {
-        assert(pthread_create(&threads[i], NULL, &wordCount, (void*)thread1[i) == 0);
-    }
-
-    free(line); // avoid memory leak
+    free(line);
 
     return 0;
 }
