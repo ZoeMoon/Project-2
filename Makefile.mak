@@ -1,13 +1,14 @@
-PGMS=project2
-
 CC=gcc
 CFLAGS=-Wall -pthread -g
 
-all: $(PGMS)
+all: project2
+
+project2: project2.c
+	$(CC)$(CFLAGS) project2.c -o project2
 
 clean:
-	rm -f $(PGMS)
+	rm -f project2
 	rm -f *.o
 
-tarball: 
-	tar -czvf $(PGMS).tar.gz project2.c
+run: 
+	./project2 < test.txt
