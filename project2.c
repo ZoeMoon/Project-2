@@ -86,10 +86,6 @@ int main(int argc, char **argv[])
     // Get number of lines to determine size of queue
     while ((length = getline(&line, &n, fp)) != -1)
     {
-        if (lineCount == 0)
-        {
-            lineCopy = line;
-        }
         if (DEBUG)
             printf("line = %s\n", line);
         lineCount++;
@@ -104,17 +100,19 @@ int main(int argc, char **argv[])
     sem_init(&q1.queue_lock, 0, 1);
     assert(sem_init(&q1.empty, 0, lineCount) == 0);
     assert(sem_init(&q1.full, 0, 0) == 0);
-
-    n = 0;       // reset buffer size
-    length = 0;  // reset length of line
+    
+    line = NULL;    // reset line pointer
+    n = 0;          // reset buffer size
+    length = 0;     // reset length of line
+    rewind(stdin);  // points stream to beginning of file 
 
     // Pushes each line from the file to the queue
-    while ((length = getline(&lineCopy, &n, fp)) != -1)
+    while ((length = getline(&line, &n, fp)) != -1)
     {
-        lineCopy[length - 1] = '\0'; // strip newline char
+       // line[length - 1] = '\0'; // strip newline char might not be needed 
         if (DEBUG)
-            printf("line q = %s\n", lineCopy);
-        put(&q1, lineCopy);
+            printf("line q = %s\n", line);
+        put(&q1, line);
     }
 
     // Set up the data to be passed to the threads
@@ -128,7 +126,6 @@ int main(int argc, char **argv[])
         assert(pthread_create(&threads[i], NULL, &wordCount, (void*)thread1[i) == 0);
     }
 
-    free(lineCopy); // avoid memory leak
     free(line); // avoid memory leak
 
     return 0;
