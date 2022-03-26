@@ -96,8 +96,9 @@ int main(int argc, char **argv[])
         lineCount++;
     }
 
-    if (DEBUG)
+    if (DEBUG){
         printf("%d\n", lineCount);
+    }
 
     // Create the queue
     char *buffer1[lineCount];
