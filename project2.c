@@ -114,10 +114,18 @@ int main(int argc, char **argv[])
     // Pushes each line from the file to the queue
     while ((length = getline(&line, &n, fp)) != -1)
     {
+    	for(int i = 0; line[i]!='\0'; i++){
+            if(line[i] == ' ' || line[i] == '\0'){
+                totalWordCount ++;
+            }
+       }
+       
         if (DEBUG)
             printf("line q = %s\n", line);
         put(&q1, line);
     }
+    
+    printf("Total Word Count = %d\n",totalWordCount);
 
     // Set up the data to be passed to the threads
     thread_data thread1 = {numTasks, &q1};
